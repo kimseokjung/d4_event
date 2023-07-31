@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Countdown Timer</title>
+    <style>
+      #countdown-display {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+
+      #start-btn,
+      #stop-btn,
+      #message-btn {
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    {% csrf_token %}
+    <h1>Countdown Timer</h1>
+    <div id="countdown-display">
+      <strong>Countdown Time :</strong> <span id="countdown-time"> - </span>
+    </div>
+    <button id="start-btn">Start Countdown</button>
+    <button id="stop-btn">Stop Countdown</button>
+    <div id="message-display"></div>
+
+    <script>
+      var countdownInterval;
+      var loc = window.location;
+      var wsStart = "ws://";
+      if (loc.protocol == "https:") {
+        wsStart = "wss://";
+      }
+      var endpoint = wsStart + loc.host + "/ws/countdown/";
+
+      var socket = new WebSocket(endpoint);
+
+      socket.onmessage = function (event) {
+        var data = JSON.parse(event.data);
+
+        if (data.command === "start_countdown") {
+          startCountdown(data.remaining_seconds);
+        } else if (data.command === "countdown_tick") {
+          updateCountdown(data.remaining_seconds);
+        } else if (data.command === "stop_countdown") {
+          stopCountdown();
+        } else if (data.command === "countdown_finished") {
+          showMessage(data.message);
+        }
+      };
+
+      function startCountdown(seconds) {
+        var countdownTime = document.getElementById("countdown-time");
+        countdownTime.innerText = formatTime(seconds);
+        countdownInterval = setInterval(function () {
+          seconds--;
+          countdownTime.innerText = formatTime(seconds);
+          if (seconds <= 0) {
+            clearInterval(countdownInterval);
+          }
+        }, 1000);
+      }
+
+      function updateCountdown(seconds) {
+        var countdownTime = document.getElementById("countdown-time");
+        countdownTime.innerText = formatTime(seconds);
+      }
+
+      function stopCountdown() {
+        clearInterval(countdownInterval);
+        var countdownTime = document.getElementById("countdown-time");
+        countdownTime.innerText = "-";
+      }
+
+      function showMessage(message) {
+        var messageDisplay = document.getElementById("message-display");
+        messageDisplay.innerText = message;
+      }
+
+      function formatTime(seconds) {
+        var hours = Math.floor(seconds / 3600);
+        var minutes = Math.floor((seconds % 3600) / 60);
+        var seconds = seconds % 60;
+        return padZero(hours) + ":" + padZero(minutes) + ":" + padZero(seconds);
+      }
+
+      function padZero(time) {
+        return (time < 10 ? "0" : "") + time;
+      }
+
+      document.getElementById("start-btn").onclick = function () {
+        var data = { command: "start_countdown" };
+        socket.send(JSON.stringify(data));
+      };
+
+      document.getElementById("stop-btn").onclick = function () {
+        console.log("stop");
+        fetch("/api/stop_countdown/")
+          .then((response) => response.text())
+          .then((data) => {
+            console.log(data);
+            var data = { command: "stop_countdown" };
+            socket.send(JSON.stringify(data));
+            showMessage("카운트 다운 종료");
+          });
+      };
+    </script>
+  </body>
+</html>
