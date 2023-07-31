@@ -7,7 +7,6 @@ from .models import Countdown
 from .serializers import CountdownSerializer
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
-from datetime import timedelta, datetime
 
 from asgiref.sync import sync_to_async
 from django.views.decorators.csrf import csrf_exempt
