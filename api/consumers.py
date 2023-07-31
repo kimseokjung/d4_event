@@ -36,7 +36,6 @@ class CountdownConsumer(AsyncWebsocketConsumer):
             await self.start_countdown_timer(countdown)
 
         elif command == 'stop_countdown':
-            print('stop in')
             countdown = Countdown.objects.first()
             countdown.active = False
             countdown.stop_countdown()
@@ -53,7 +52,7 @@ class CountdownConsumer(AsyncWebsocketConsumer):
 
     async def start_countdown_timer(self, countdown):
         while countdown.active:
-            print(f'progress : {countdown.countdown_in_progress}')
+            # print(f'progress : {countdown.countdown_in_progress}')
             countdown_data = {
                 'command': 'countdown_tick',
                 'remaining_seconds': int(countdown.remaining_time.total_seconds()),
@@ -67,7 +66,6 @@ class CountdownConsumer(AsyncWebsocketConsumer):
             countdown.update_countdown()
 
             if countdown.remaining_time.total_seconds() == 0:
-                print('zero time')
                 if countdown.countdown_in_progress:
                     countdown_data = {
                         'command': 'countdown_finished',

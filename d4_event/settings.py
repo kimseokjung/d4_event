@@ -28,13 +28,14 @@ SECRET_KEY = "django-insecure-#uq_#8z@5^6=8ocz7sxpcpt=u^c-w*n-g1r-e^v3^pp^y9h&0(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    '.ap-northeast-2.compute.amazonaws.com',
+]
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    # "daphne",
     "daphne",
     "api.apps.ApiConfig",
     "django.contrib.admin",

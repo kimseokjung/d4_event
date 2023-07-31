@@ -20,12 +20,12 @@ class Countdown(models.Model):
         self.save()
 
     def update_countdown(self):
-        print('@ model update')
-        print(f'active : {self.active}')
+        # print('@ model update')
+        # print(f'active : {self.active}')
         if self.active and self.remaining_time.total_seconds() >= 0:
             self.remaining_time -= timedelta(seconds=1)
             self.save()
-            print(f'time : {self.remaining_time.total_seconds()}')
+            # print(f'time : {self.remaining_time.total_seconds()}')
         else:
             print('update error')
 
