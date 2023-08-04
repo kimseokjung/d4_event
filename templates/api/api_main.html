@@ -24,6 +24,11 @@
     <div id="countdown-display">
       <strong>Countdown Time :</strong> <span id="countdown-time"> - </span>
     </div>
+    <div>
+      <label for="reservation-time">Reservation-time</label>
+      <input type="datetime-local" id="reservation-time" />
+      <button id="reserve-btn">Reserve Countdown</button>
+    </div>
     <button id="start-btn">Start Countdown</button>
     <button id="stop-btn">Stop Countdown</button>
     <div id="message-display"></div>
@@ -107,6 +112,16 @@
             socket.send(JSON.stringify(data));
             showMessage("카운트 다운 종료");
           });
+      };
+
+      document.getElementById("reserve-btn").onclick = function () {
+        var reservationTime = document.getElementById("reservation-time").value;
+
+        var data = {
+          command: "reserve_countdown",
+          reservation_time: reservationTime,
+        };
+        socket.send(JSON.stringify(data));
       };
     </script>
   </body>

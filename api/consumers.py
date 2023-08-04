@@ -3,7 +3,8 @@ import asyncio
 
 from channels.generic.websocket import AsyncWebsocketConsumer
 from .models import Countdown
-from datetime import timedelta
+from datetime import timedelta, datetime
+from django.utils import timezone
 
 from asgiref.sync import sync_to_async
 
@@ -46,6 +47,34 @@ class CountdownConsumer(AsyncWebsocketConsumer):
             }
 
             await self.send_countdown_data(countdown_data)
+
+        elif command == 'reserve_countdown':
+            reservation_time_str = data.get('reservation_time')
+            print(reservation_time_str)
+            if reservation_time_str:
+                reservation_time = timezone.datetime.fromisoformat(
+                    reservation_time_str)
+                print(reservation_time)
+
+                # 예약시간 확인 루프
+                while reservation_time > datetime.now():
+                    # 1초마다 확인
+                    await self.sleep_time(1)
+                else:
+                    # 루프를 벗어 났다면 예약시간!
+                    print('== Start reservation! ==')
+                    countdown = Countdown.objects.first()
+                    countdown.remaining_time = timedelta(seconds=0)
+                    countdown.countdown_in_progress = False
+                    countdown.start_or_reset_countdown()
+
+                    countdown_data = {
+                        'command': 'start_countdown',
+                        'remaining_seconds': int(countdown.remaining_time.total_seconds()),
+                    }
+
+                    await self.send_countdown_data(countdown_data)
+                    await self.start_countdown_timer(countdown)
 
     async def send_countdown_data(self, countdown_data):
         await self.send(text_data=json.dumps(countdown_data))
