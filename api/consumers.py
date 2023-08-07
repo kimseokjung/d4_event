@@ -43,6 +43,7 @@ class CountdownConsumer(AsyncWebsocketConsumer):
             }
 
             await self.send_countdown_data(countdown_data)
+            await countdown.send_countdown_data(countdown_data)
             await self.start_countdown_timer(countdown)
 
         elif command == 'stop_countdown':
@@ -76,6 +77,7 @@ class CountdownConsumer(AsyncWebsocketConsumer):
                     }
 
                     await self.send_countdown_data(countdown_data)
+                    await countdown.send_countdown_data(countdown_data)
                     await self.start_countdown_timer(countdown)
 
     async def send_countdown_data(self, countdown_data):
@@ -91,6 +93,7 @@ class CountdownConsumer(AsyncWebsocketConsumer):
                 'remaining_seconds': int(countdown.remaining_time.total_seconds()),
             }
             await self.send_countdown_data(countdown_data)
+            await countdown.send_countdown_data(countdown_data)
             await asyncio.sleep(1)
 
             countdown = Countdown.objects.first()
@@ -110,4 +113,5 @@ class CountdownConsumer(AsyncWebsocketConsumer):
                         'message': '1시간 카운트 다운 종료'
                     }
                 await self.send_countdown_data(countdown_data)
+                await countdown.send_countdown_data(countdown_data)
                 countdown.start_or_reset_countdown()
