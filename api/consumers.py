@@ -1,26 +1,36 @@
+from channels.generic.websocket import AsyncWebsocketConsumer
 import json
+from asgiref.sync import async_to_sync
+from datetime import datetime, timedelta
 import asyncio
 
-from channels.generic.websocket import AsyncWebsocketConsumer
-from .models import Countdown
-from datetime import timedelta, datetime
-from django.utils import timezone
-
-from asgiref.sync import sync_to_async
+from api.models import Countdown
 
 
 class CountdownConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        self.room_name = 'countdown'
+        self.room_group_name = f"countdown_group_{self.room_name}"
+
+        # Join room group
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name,
+        )
         await self.accept()
 
     async def disconnect(self, close_code):
-        countdown = Countdown.objects.first()
-        countdown.stop_countdown()
+        # Leave room group
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name,
+        )
+        # countdown = Countdown.objects.first()
+        # countdown.stop_countdown()
 
     async def receive(self, text_data):
         data = json.loads(text_data)
         command = data.get('command')
-        print(f'command: {command}')
 
         if command == 'start_countdown':
             countdown = Countdown.objects.first()
@@ -50,19 +60,12 @@ class CountdownConsumer(AsyncWebsocketConsumer):
 
         elif command == 'reserve_countdown':
             reservation_time_str = data.get('reservation_time')
-            print(reservation_time_str)
             if reservation_time_str:
-                reservation_time = timezone.datetime.fromisoformat(
-                    reservation_time_str)
-                print(reservation_time)
+                reservation_time = datetime.fromisoformat(reservation_time_str)
 
-                # 예약시간 확인 루프
                 while reservation_time > datetime.now():
-                    # 1초마다 확인
-                    await self.sleep_time(1)
+                    await asyncio.sleep(1)
                 else:
-                    # 루프를 벗어 났다면 예약시간!
-                    print('== Start reservation! ==')
                     countdown = Countdown.objects.first()
                     countdown.remaining_time = timedelta(seconds=0)
                     countdown.countdown_in_progress = False
@@ -81,13 +84,12 @@ class CountdownConsumer(AsyncWebsocketConsumer):
 
     async def start_countdown_timer(self, countdown):
         while countdown.active:
-            # print(f'progress : {countdown.countdown_in_progress}')
             countdown_data = {
                 'command': 'countdown_tick',
                 'remaining_seconds': int(countdown.remaining_time.total_seconds()),
             }
             await self.send_countdown_data(countdown_data)
-            await self.sleep_time(1)
+            await asyncio.sleep(1)
 
             countdown = Countdown.objects.first()
             if not countdown.active:
@@ -107,10 +109,3 @@ class CountdownConsumer(AsyncWebsocketConsumer):
                     }
                 await self.send_countdown_data(countdown_data)
                 countdown.start_or_reset_countdown()
-
-    # async def countdown_tick(self, event):
-    #     countdown_data = event['data']
-    #     await self.send_countdown_data(countdown_data)
-
-    async def sleep_time(self, seconds):
-        await asyncio.sleep(seconds)
