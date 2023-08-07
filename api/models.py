@@ -54,7 +54,7 @@ class Countdown(models.Model):
 
     def send_countdown_data(self, data):
         channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
+        channel_layer.group_send(
             'countdown_group',
             {
                 'type': 'countdown.tick',
