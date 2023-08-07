@@ -84,7 +84,8 @@ class CountdownConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(countdown_data))
 
     async def countdown_tick(self, event):
-        await self.send(text_data=json.dumps(event))
+        countdown_data = event['data']
+        await self.send(text_data=json.dumps(countdown_data))
 
     async def start_countdown_timer(self, countdown):
         while countdown.active:
