@@ -3,6 +3,10 @@ from django.utils import timezone
 from datetime import timedelta
 
 
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
+
 class Countdown(models.Model):
     remaining_time = models.DurationField(null=True, blank=True)
     countdown_in_progress = models.BooleanField(default=False)
@@ -47,3 +51,13 @@ class Countdown(models.Model):
         self.countdown_in_progress = True
         self.active = True
         self.save()
+
+    def send_countdown_data(self, data):
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            'countdown_group',
+            {
+                'type': 'countdown.tick',
+                'data': data,
+            }
+        )

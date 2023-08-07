@@ -9,8 +9,7 @@ from api.models import Countdown
 
 class CountdownConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.room_name = 'countdown'
-        self.room_group_name = f"countdown_group_{self.room_name}"
+        self.room_group_name = 'countdown_group'
 
         # Join room group
         await self.channel_layer.group_add(
@@ -81,6 +80,9 @@ class CountdownConsumer(AsyncWebsocketConsumer):
 
     async def send_countdown_data(self, countdown_data):
         await self.send(text_data=json.dumps(countdown_data))
+
+    async def countdown_tick(self, event):
+        await self.send(text_data=json.dumps(event))
 
     async def start_countdown_timer(self, countdown):
         while countdown.active:
