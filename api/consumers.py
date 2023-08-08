@@ -102,6 +102,7 @@ class CountdownConsumer(AsyncWebsocketConsumer):
 
             countdown = Countdown.objects.first()
             if not countdown.active:
+                countdown.stop_countdown()
                 break
             countdown.update_countdown()
 
