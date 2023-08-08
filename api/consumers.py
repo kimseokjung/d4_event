@@ -117,6 +117,7 @@ class CountdownConsumer(AsyncWebsocketConsumer):
                         'command': 'countdown_finished',
                         'message': '1시간 카운트 다운 종료'
                     }
+                await self.channel_layer_group_send(countdown_data)
                 await self.send_countdown_data(countdown_data)
                 countdown.start_or_reset_countdown()
 
