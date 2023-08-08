@@ -110,6 +110,7 @@
             console.log(data);
             var data = { command: "stop_countdown" };
             socket.send(JSON.stringify(data));
+            clearInterval(countdownInterval);
             showMessage("카운트 다운 종료");
           });
       };

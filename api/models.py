@@ -51,13 +51,3 @@ class Countdown(models.Model):
         self.countdown_in_progress = True
         self.active = True
         self.save()
-
-    def send_countdown_data(self, data):
-        channel_layer = get_channel_layer()
-        channel_layer.group_send(
-            'countdown_group',
-            {
-                'type': 'countdown.tick',
-                'data': data,
-            }
-        )
