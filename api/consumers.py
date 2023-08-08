@@ -41,9 +41,9 @@ class CountdownConsumer(AsyncWebsocketConsumer):
                 'command': 'start_countdown',
                 'remaining_seconds': int(countdown.remaining_time.total_seconds()),
             }
+            await self.channel_layer_group_send(countdown_data)
 
             await self.send_countdown_data(countdown_data)
-            countdown.send_countdown_data(countdown_data)
             await self.start_countdown_timer(countdown)
 
         elif command == 'stop_countdown':
@@ -55,6 +55,7 @@ class CountdownConsumer(AsyncWebsocketConsumer):
                 'command': 'stop_countdown',
                 'remaining_seconds': 0,
             }
+            await self.channel_layer_group_send(countdown_data)
 
             await self.send_countdown_data(countdown_data)
 
@@ -75,9 +76,9 @@ class CountdownConsumer(AsyncWebsocketConsumer):
                         'command': 'start_countdown',
                         'remaining_seconds': int(countdown.remaining_time.total_seconds()),
                     }
+                    await self.channel_layer_group_send(countdown_data)
 
                     await self.send_countdown_data(countdown_data)
-                    countdown.send_countdown_data(countdown_data)
                     await self.start_countdown_timer(countdown)
 
     async def send_countdown_data(self, countdown_data):
@@ -93,8 +94,10 @@ class CountdownConsumer(AsyncWebsocketConsumer):
                 'command': 'countdown_tick',
                 'remaining_seconds': int(countdown.remaining_time.total_seconds()),
             }
+
+            await self.channel_layer_group_send(countdown_data)
+
             await self.send_countdown_data(countdown_data)
-            countdown.send_countdown_data(countdown_data)
             await asyncio.sleep(1)
 
             countdown = Countdown.objects.first()
@@ -114,5 +117,13 @@ class CountdownConsumer(AsyncWebsocketConsumer):
                         'message': '1시간 카운트 다운 종료'
                     }
                 await self.send_countdown_data(countdown_data)
-                countdown.send_countdown_data(countdown_data)
                 countdown.start_or_reset_countdown()
+
+    async def channel_layer_group_send(self, countdown_data):
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'countdown_tick',
+                'data': countdown_data,
+            }
+        )
