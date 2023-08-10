@@ -6,6 +6,13 @@ import asyncio
 
 from api.models import Countdown
 
+import firebase_admin
+from firebase_admin import credentials, messaging
+
+cred = credentials.Certificate(
+    "d4-event-tracking-app-firebase-adminsdk-9e8py-9d8dc26eb1.json")
+firebase_admin.initialize_app(cred)
+
 
 class CountdownConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -112,6 +119,10 @@ class CountdownConsumer(AsyncWebsocketConsumer):
                         'command': 'countdown_finished',
                         'message': '1시간 15분 카운트 다운 종료'
                     }
+                    await self.send_firebase_notification(
+                        message_title='Helltide',
+                        message_body='Helltide Start!!',
+                    )
                 else:
                     countdown_data = {
                         'command': 'countdown_finished',
@@ -129,3 +140,14 @@ class CountdownConsumer(AsyncWebsocketConsumer):
                 'data': countdown_data,
             }
         )
+
+    async def send_firebase_notification(self, message_title, message_body):
+        message = messaging.Message(
+            notification=messaging.Notification(
+                title=message_title,
+                body=message_body,
+            ),
+            topic='all_devices',
+        )
+        response = messaging.send(message)
+        print('Successfully sent message:', response)
