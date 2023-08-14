@@ -115,7 +115,7 @@ class CountdownConsumer(AsyncWebsocketConsumer):
                         'command': 'countdown_finished',
                         'message': '1시간 15분 카운트 다운 종료'
                     }
-                    await self.send_firebase_notification(
+                    self.send_firebase_notification(
                         message_title='Helltide',
                         message_body='Helltide Start!!',
                     )
@@ -151,8 +151,8 @@ class CountdownConsumer(AsyncWebsocketConsumer):
 
         message = {
             'notification': {
-                'title': 'Helltide',
-                'body': '시작되었습니다',
+                'title': message_title,
+                'body': message_body,
             },
             'to': '/topics/countdown_finished'
         }
