@@ -3,15 +3,11 @@ import json
 from asgiref.sync import async_to_sync
 from datetime import datetime, timedelta
 import asyncio
+import requests
 
 from api.models import Countdown
 
-import firebase_admin
-from firebase_admin import credentials, messaging
-
-cred = credentials.Certificate(
-    "d4-event-tracking-app-firebase-adminsdk-9e8py-9d8dc26eb1.json")
-firebase_admin.initialize_app(cred)
+from firebase_admin import messaging
 
 
 class CountdownConsumer(AsyncWebsocketConsumer):
@@ -142,12 +138,37 @@ class CountdownConsumer(AsyncWebsocketConsumer):
         )
 
     async def send_firebase_notification(self, message_title, message_body):
-        message = messaging.Message(
-            notification=messaging.Notification(
-                title=message_title,
-                body=message_body,
-            ),
-            topic='all_devices',
-        )
-        response = messaging.send(message)
-        print('Successfully sent message:', response)
+        server_key = "AAAAk_iyOjs:APA91bHPslDKOj1gNdSdpHjt2meWYqV7Eu9gXNPjuykJuRATMOoMbN0J_6fUG_XH-K9b0M1quDDrtJA4cm7IPdhTDDXUealB0Ysdb0zkU6mvguEZuvBYA_6CWVUcsQTFRbEb8hF667gq"
+        url = 'https://fcm.googleapis.com/fcm/send'
+
+        # message = messaging.Message(
+        #     notification=messaging.Notification(
+        #         title=message_title,
+        #         body=message_body,
+        #     ),
+        #     topic='countdown_finished',
+        # )
+
+        message = {
+            'notification': {
+                'title': 'Helltide',
+                'body': '시작되었습니다',
+            },
+            'to': '/topics/countdown_finished'
+        }
+
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'key={server_key}'
+        }
+
+        try:
+            response = requests.post(
+                url,
+                json=message,
+                headers=headers,
+            )
+            # response = messaging.send(message)
+            print('Successfully sent message:', response)
+        except Exception as e:
+            print(f"Error : {e}")

@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+from firebase_admin import credentials, messaging
+import firebase_admin
 from pathlib import Path
 from datetime import timedelta
 import os
@@ -156,3 +158,8 @@ CHANNEL_LAYERS = {
 
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = 'true'
 django.setup()
+
+cred_path = os.path.join(
+    BASE_DIR, "d4-event-tracking-app-firebase-adminsdk-9e8py-9d8dc26eb1.json")
+cred = credentials.Certificate(cred_path)
+firebase_admin.initialize_app(cred)
