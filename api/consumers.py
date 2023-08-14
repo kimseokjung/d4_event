@@ -115,9 +115,9 @@ class CountdownConsumer(AsyncWebsocketConsumer):
                         'command': 'countdown_finished',
                         'message': '1시간 15분 카운트 다운 종료'
                     }
-                    self.send_firebase_notification(
-                        message_title='Helltide',
-                        message_body='Helltide Start!!',
+                    await self.send_firebase_notification(
+                        message_title='D4 Tracker',
+                        message_body='지옥물결이 시작되었습니다.',
                     )
                 else:
                     countdown_data = {
@@ -141,14 +141,6 @@ class CountdownConsumer(AsyncWebsocketConsumer):
         server_key = "AAAAk_iyOjs:APA91bHPslDKOj1gNdSdpHjt2meWYqV7Eu9gXNPjuykJuRATMOoMbN0J_6fUG_XH-K9b0M1quDDrtJA4cm7IPdhTDDXUealB0Ysdb0zkU6mvguEZuvBYA_6CWVUcsQTFRbEb8hF667gq"
         url = 'https://fcm.googleapis.com/fcm/send'
 
-        # message = messaging.Message(
-        #     notification=messaging.Notification(
-        #         title=message_title,
-        #         body=message_body,
-        #     ),
-        #     topic='countdown_finished',
-        # )
-
         message = {
             'notification': {
                 'title': message_title,
@@ -168,7 +160,6 @@ class CountdownConsumer(AsyncWebsocketConsumer):
                 json=message,
                 headers=headers,
             )
-            # response = messaging.send(message)
             print('Successfully sent message:', response)
         except Exception as e:
             print(f"Error : {e}")
