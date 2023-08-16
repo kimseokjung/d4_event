@@ -112,7 +112,7 @@ class CountdownConsumer(AsyncWebsocketConsumer):
             if countdown.remaining_time.total_seconds() == 0:
                 if countdown.countdown_in_progress:
                     countdown_data = {
-                        'command': 'countdown_finished',
+                        'command': 'countdown_started',
                         'message': '1시간 15분 카운트 다운 종료'
                     }
                     await self.send_firebase_notification(
